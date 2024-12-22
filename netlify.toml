@@ -1,4 +1,11 @@
 [build]
     functions = "functions"
     node_bundler = "esbuild"
-    
+
+[[redirects]]
+  from = "/api/v1/"
+  to = "/.netlify/functions/api/"
+  status = 200
+[[redirects]]
+    from = "/api/v1/*"
+    to = "/.netlify/functions/api/:splat"

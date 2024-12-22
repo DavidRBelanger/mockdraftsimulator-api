@@ -1,0 +1,2 @@
+### Test root path
+GET http://localhost:8888/api/v1
