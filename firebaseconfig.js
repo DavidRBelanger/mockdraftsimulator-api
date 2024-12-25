@@ -1,7 +1,7 @@
 const { initializeApp } = require("firebase/app");
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDJN1rCfpQN-UPu6hQMumPvUcSRmW1ese4",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "footballdraftprospects.firebaseapp.com",
   projectId: "footballdraftprospects",
   storageBucket: "footballdraftprospects.firebasestorage.app",

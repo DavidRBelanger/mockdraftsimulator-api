@@ -1,7 +1,7 @@
 const express = require('express');
 const serverless = require('serverless-http');
 const { firebaseApp } = require('../firebaseconfig');
-const { getFirestore, doc, getDoc } = require('firebase/firestore');
+const { getFirestore, doc, getDoc, collection, query, where, getDocs } = require('firebase/firestore');
 const crypto = require('crypto');
 
 const db = getFirestore(firebaseApp);
@@ -32,18 +32,55 @@ const apiKeyMiddleware = async (req, res, next) => {
 
 router.use(apiKeyMiddleware);
 
-router.get('/', (req, res) => {
+router.get('/', (_, res) => {
   res.send('Hello World!');
 });
 
-router.get('/api/v1', (req, res) => {
+router.get('/v1', (_, res) => {
   res.send('API v1');
 });
 
-router.get('/api/v1/player', (req, res) => {
-  res.send('API v1 Player');
+router.get('/v1/positions', (_, res) => {
+  const positions = ['CB', 'QB', 'WR', 'DL', 'EDGE', 'OT', 'RB', 'S', 'LB', 'TE', 'IOL'];
+  res.json(positions);
 });
 
-app.use('/.netlify/functions/api', router);
+router.get('/v1/player', async (req, res) => {
+  const { player_name, player_id, college_id, rank_less_than } = req.query;
+
+  if (player_name) {
+    const normalizedPlayerName = player_name.replace(/_/g, ' ');
+    const playerRef = doc(db, 'playerRankings', normalizedPlayerName);
+    const playerDoc = await getDoc(playerRef);
+    if (playerDoc.exists()) {
+      res.json(playerDoc.data());
+    } else {
+      res.status(404).send(`Player ${normalizedPlayerName} not found`);
+    }
+  } else if (player_id) {
+    const playersQuery = query(collection(db, 'playerRankings'), where('player_id', '==', parseInt(player_id)));
+    const querySnapshot = await getDocs(playersQuery);
+    const playerDoc = querySnapshot.docs[0];
+    if (playerDoc.exists()) {
+      res.json(playerDoc.data());
+    } else {
+      res.status(404).send(`Player with ID ${player_id} not found`);
+    }
+  } else if (college_id) {
+    const playersQuery = query(collection(db, 'playerRankings'), where('college_id', '==', parseInt(college_id)));
+    const querySnapshot = await getDocs(playersQuery);
+    const players = querySnapshot.docs.map(doc => doc.data());
+    res.json(players);
+  } else if (rank_less_than) {
+    const playersQuery = query(collection(db, 'playerRankings'), where('average_rank', '<', parseInt(rank_less_than, 10)));
+    const querySnapshot = await getDocs(playersQuery);
+    const players = querySnapshot.docs.map(doc => doc.data());
+    res.json(players);
+  } else {
+    res.status(400).send('Bad Request: Missing query parameter');
+  }
+});
+
+app.use('/api', router);
 
 module.exports.handler = serverless(app);
