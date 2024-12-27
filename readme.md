@@ -73,7 +73,7 @@ Retrieves player information based on query parameters.
 
 ## Example Request
 ```bash
-curl -H "x-api-key: YOUR_API_KEY" "https://yourapiurl.com/api/v1/player?player_name=Travis_Hunter"
+curl -H "x-api-key: YOUR_API_KEY" "/https://nflprospectsapi.netlify.app/api/v1/player?player_name=Travis_Hunter"
 ```
 
 ## Example Response
